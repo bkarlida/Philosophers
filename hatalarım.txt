@@ -1,0 +1,3 @@
+// eat count bütün filozoflarımın yemek say8ısın ayhnı olmaalı sadece must eat girildiyse aynı olmalıo ama dikkat
+//  200 800 200 200 ölmemesi lazım
+./philo 2 399 200 100 600    de ölüyor

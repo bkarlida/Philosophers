@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   philo_utils.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bkarlida <bkarlida@student.42.fr>          +#+  +:+       +#+        */
+/*   By: burakkarlidag <burakkarlidag@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/18 00:55:35 by bkarlida          #+#    #+#             */
-/*   Updated: 2023/07/27 23:36:56 by bkarlida         ###   ########.fr       */
+/*   Updated: 2023/08/06 01:57:08 by burakkarlid      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,61 +41,52 @@ int	ft_atoi(const char *str)
 	return (result * sign);
 }
 
-long long	get_time(void)
+void	sleep_func(int until)
 {
-	struct timeval	tv;
-	long long		time;
+	unsigned long	localtime;
 
-	gettimeofday(&tv, NULL);
-	time = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
-	return (time);
+	localtime = get_time();
+	while ((get_time() - localtime) < (unsigned long)until)
+		usleep(200);
 }
 
-
-
-void	sleep_func(long long time, t_rules *rules)
+void	mutex_destroy(t_philo *philo)
 {
-	long long	i;
-	//(void)rules;
-	i = get_time();
-	while (!(rules->dead))
+	int	i;
+
+	i = 0;
+	while (i < philo->rules->nb)
 	{
-		if (get_time() - i >= time)
-			break ;
-		usleep(300);
+		pthread_mutex_destroy(&philo->rules->forks[i]);
+		pthread_mutex_destroy(&philo->rules->all_sleep_mutex[i]);
+		pthread_mutex_destroy(&philo->rules->all_eat_mutex[i]);
+		pthread_mutex_destroy(&philo->print_mutex[i]);
+		i++;
+	}
+	pthread_mutex_destroy(&philo->rules->death_mutex);
+	free(philo->rules->all_eat_mutex);
+	free(philo->rules->all_sleep_mutex);
+	free(philo->rules->forks);
+	free(philo);
+}
+
+void	thread_join(t_philo *philo)
+{
+	int	k;
+
+	k = 0;
+	while (k < philo->rules->nb)
+	{
+		pthread_join(philo[k].thread_id, NULL);
+		k++;
 	}
 }
 
-// void	eat_control(t_rules *rules)
-// {
-// 	int	i;
-// 	int	flag;
 
-// 	i = 0;
-// 	flag = 0;
-// 	while (i < rules->nb)
-// 	{
-// 		if (rules->philos[i].eat_count == rules->must_eat)
-// 			flag++;
-// 		if (flag == rules->nb)
-// 		{
-// 			rules->togg = 1;
-// 		}
-// 		i++;
-// 	}
-// }
-
-void	print_philo(t_philo *phl, t_rules *rules, char *str)
+void	mutex_sleep(t_philo *philo)
 {
-	pthread_mutex_lock(&(rules->death_mutex));
-	if (!(rules->dead))
-	{
-		pthread_mutex_unlock(&rules->death_mutex);
-		pthread_mutex_lock(&(rules->print_mutex));
-		printf("[%lli] ", get_time() - rules->ft);
-		printf("%i ", phl->id + 1);
-		printf("%s", str);
-		pthread_mutex_unlock(&rules->print_mutex);
-	}
-	pthread_mutex_unlock(&rules->death_mutex);
+	pthread_mutex_lock(philo->sleep_mutex);
+	print_philo(philo, "is sleeping\n");
+	pthread_mutex_unlock(philo->sleep_mutex);
+	sleep_func(philo->rules->ts);
 }

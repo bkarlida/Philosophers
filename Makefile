@@ -1,4 +1,4 @@
-SRCS		=		philo.c philo_control.c philo_utils.c philo_thread.c philo_division.c
+SRCS		=		philo_control.c philo_utils.c philo_thread.c philo_division.c
 
 OBJS		=		$(SRCS:.c=.o)
 
@@ -6,7 +6,7 @@ NAME		=		philo
 
 CC			=		gcc
 
-CFLAGS		=		-Wall -Wextra -Werror -fsanitize=thread -g
+CFLAGS		=		-Wall -Wextra -Werror
 
 RM			=		rm -rf
 
